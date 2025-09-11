@@ -1,0 +1,18 @@
+# Build directories
+build/
+vscode/
+
+# Compiled files
+*.so
+*.o
+*.a
+
+# IDE files
+.vscode/
+*.user
+*.suo
+*.sln
+
+# OS files
+.DS_Store
+Thumbs.db
