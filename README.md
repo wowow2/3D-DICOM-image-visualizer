@@ -1,4 +1,4 @@
-# DICOMVIS
+# 3D DICOM visualizer in C++
 
 A DICOM viewer application built with Qt, VTK, and DCMTK.
 
