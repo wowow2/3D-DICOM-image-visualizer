@@ -15,6 +15,11 @@ Requires:
 - DCMTK
 - Eigen3
 
+## Sample Images (RV Contour)
+<img width="1211" height="743" alt="image (2)" src="https://github.com/user-attachments/assets/db03c840-1454-4c87-8b2f-6cc1f2c47a56" />
+<img width="1212" height="743" alt="image (3)" src="https://github.com/user-attachments/assets/ccaf50e9-e85b-4b10-ab51-ce12bfd0d7f1" />
+
+
 ```bash
 mkdir build && cd build
 cmake ..
