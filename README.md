@@ -29,6 +29,13 @@ cmake --build .
 After the build process is complete, the executable will be located inside the build directory. To start the DICOMVIS application, run the following command from within the build directory:
 
 ```bash
-./DICOMVIS
+./DicomViewer
 ```
+If the above does not work, then run:
+
+```bash
+LIBGL_ALWAYS_SOFTWARE=1 ./DicomViewer
+```
+
+
 
