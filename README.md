@@ -2,15 +2,26 @@
 
 A DICOM viewer application built with Qt, VTK, and DCMTK.
 
+![Demo](assets/demo.gif)
+*13 SA slices · 25 cardiac phases · RV contours — `sample_data/AB_20210818`*
+
 ## Features
 - Load and view DICOM series
 - Display associated contour data
 - Adjustable transparency for slice viewing
 - Time series navigation
 
-## Sample Images (RV Contour)
+## Screenshots
+
+| Loaded (transparent) | Mid-phase | Opaque |
+|---|---|---|
+| ![Loaded](assets/viewer_loaded.png) | ![Mid](assets/viewer_mid.png) | ![Opaque](assets/viewer_opaque.png) |
+
+<details>
+<summary>Previous sample images</summary>
 <img width="1211" height="743" alt="image (2)" src="https://github.com/user-attachments/assets/db03c840-1454-4c87-8b2f-6cc1f2c47a56" />
 <img width="1212" height="743" alt="image (3)" src="https://github.com/user-attachments/assets/ccaf50e9-e85b-4b10-ab51-ce12bfd0d7f1" />
+</details>
 
 ## Building
 
