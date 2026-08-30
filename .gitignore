@@ -2,6 +2,12 @@
 build/
 vscode/
 
+# Sample data (synced locally from the research dataset; contains medical images)
+sample_data/
+
+# Locally built dependencies (VTK from source)
+third_party/
+
 # Compiled files
 *.so
 *.o
