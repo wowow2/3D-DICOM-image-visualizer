@@ -20,6 +20,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void loadPatientDirectory(const QString& patientPath); // Load a patient dir (CLI or dialog)
+
 private slots:
     // Slots are methods that respond to specific signals (events)
     void onLoadPatient(); // Handles the "Load Patient" button click event

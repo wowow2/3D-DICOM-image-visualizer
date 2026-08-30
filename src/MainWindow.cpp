@@ -55,6 +55,55 @@ void MainWindow::setupConnections() {
 
 }
 
+void MainWindow::loadPatientDirectory(const QString& patientPath) {
+    if (patientPath.isEmpty()) return;
+
+    std::vector<std::string> seriesNames = m_dicomManager.discoverSeries(patientPath.toStdString());
+    if (seriesNames.empty()) {
+        QMessageBox::warning(this, "No series found",
+                             "No series sub-directories found in the selected path.");
+        statusBar()->showMessage("No series found", 5000);
+        return;
+    }
+
+    // CLI / direct load: load all discovered series without asking
+    statusBar()->showMessage(QString("Loading %1 series...").arg(seriesNames.size()));
+    if (m_dicomManager.loadSelectedSeries(patientPath.toStdString(), seriesNames)) {
+        QSettings settings;
+        settings.setValue("lastPatientDir", patientPath);
+
+        int numFrames = m_dicomManager.getNumberOfFrames();
+        if (numFrames > 1) {
+            m_controlPanel->setFrameSliderRange(0, numFrames - 1);
+            m_controlPanel->setControlsEnabled(true);
+            m_controlPanel->getFrameSlider()->setValue(0);
+        } else {
+            m_controlPanel->setControlsEnabled(false);
+            if (numFrames == 1) {
+                m_controlPanel->setFrameSliderRange(0,0);
+                m_controlPanel->updateFrameLabel(0,0);
+            }
+        }
+
+        QString patientName = QFileInfo(patientPath).fileName();
+        setWindowTitle(QString("Dicom Viewer — %1 — %2 series · %3 frames")
+                           .arg(patientName)
+                           .arg(seriesNames.size())
+                           .arg(numFrames));
+        statusBar()->showMessage(QString("Loaded %1 — %2 series · %3 frames")
+                                     .arg(patientName)
+                                     .arg(seriesNames.size())
+                                     .arg(numFrames),
+                                 8000);
+        onSliderReleased();
+        m_vtkManager.resetCamera();
+    } else {
+        QMessageBox::critical(this, "Load failed",
+                              "Failed to load DICOM data from the selected series.");
+        statusBar()->showMessage("Load failed", 5000);
+    }
+}
+
 // Handles the "Load Patient" button click event
 void MainWindow::onLoadPatient() {
     QSettings settings;

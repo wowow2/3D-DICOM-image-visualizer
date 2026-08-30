@@ -17,8 +17,8 @@ A DICOM viewer application built with Qt, VTK, and DCMTK.
 Requires CMake, a C++17 compiler, Qt5, VTK 9, DCMTK, and Eigen3.
 
 ```bash
-sudo ./scripts/setup-deps.sh      # Ubuntu/Debian dependencies
-sudo ./scripts/install-vtk-apt.sh # VTK 9.1 headers (needed on Ubuntu 24.04)
+sudo ./scripts/setup-deps.sh   # Qt5, DCMTK, Eigen3, X11/GL headers
+./scripts/build-vtk.sh         # pinned VTK 9.3.1 (~15 min, no root)
 
 mkdir -p build && cd build
 cmake ..
@@ -28,10 +28,11 @@ cmake --build .
 ## Running
 
 The executable is `build/DicomViewer`. Launch it and click **Load Patient**
-to pick a patient directory:
+to pick a patient directory, or pass one directly:
 
 ```bash
 ./DicomViewer
+./DicomViewer sample_data/AB_20210818
 ```
 
 If rendering fails (no working OpenGL drivers), fall back to software rendering:
