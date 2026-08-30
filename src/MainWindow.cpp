@@ -7,8 +7,12 @@
 #include <QWidget>
 #include <QFileDialog>
 #include <QSlider>
+#include <QSettings>
+#include <QDir>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QStatusBar>
 #include <vtkRenderWindow.h>
-#include <iostream>
 
 // Construct main application
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -53,61 +57,71 @@ void MainWindow::setupConnections() {
 
 // Handles the "Load Patient" button click event
 void MainWindow::onLoadPatient() {
-    // Open directory selection dialog
-    QString patientPath = QFileDialog::getExistingDirectory(this, "Select Patient Directory",
-                                                       "/mnt/c/Users/abida/OneDrive/Desktop/Compute_Volume/Dataset/sa_dicom");
-    if (patientPath.isEmpty()) { 
-        // User cancelled the dialog
+    QSettings settings;
+    QString lastDir = settings.value("lastPatientDir", QDir::homePath()).toString();
+
+    QString patientPath = QFileDialog::getExistingDirectory(this, "Select Patient Directory", lastDir);
+    if (patientPath.isEmpty()) {
         return;
     }
 
-    // Discover available DICOM series in the selected directory
     std::vector<std::string> seriesNames = m_dicomManager.discoverSeries(patientPath.toStdString());
 
     if (seriesNames.empty()) {
-        std::cout << "No series sub-directories found in the selected path." << std::endl;
+        QMessageBox::warning(this, "No series found",
+                             "No series sub-directories found in the selected path.");
+        statusBar()->showMessage("No series found", 5000);
         return;
     }
 
-    // Show series selection dialog to the user
     SeriesSelectionDialog dialog(seriesNames, this);
     if (dialog.exec() == QDialog::Accepted) {
         std::vector<std::string> selectedSeries = dialog.getSelectedSeries();
         if (selectedSeries.empty()) {
-            std::cout << "User did not select any series." << std::endl;
+            statusBar()->showMessage("No series selected", 5000);
             return;
         }
 
-        std::cout << "--- Loading " << selectedSeries.size() << " selected series... ---" << std::endl;
-        
-        // Load the selected DICOM series
+        statusBar()->showMessage(QString("Loading %1 series...").arg(selectedSeries.size()));
+
         if (m_dicomManager.loadSelectedSeries(patientPath.toStdString(), selectedSeries)) {
-            // Get the number of frames in the longest series
+            settings.setValue("lastPatientDir", patientPath);
+
             int numFrames = m_dicomManager.getNumberOfFrames();
 
             if (numFrames > 1) {
-                // Enable controls and set slider range, assuming multiple frames
                 m_controlPanel->setFrameSliderRange(0, numFrames - 1);
                 m_controlPanel->setControlsEnabled(true);
                 m_controlPanel->getFrameSlider()->setValue(0);
             } else {
-                // There is only one frame
                 m_controlPanel->setControlsEnabled(false);
                 if (numFrames == 1) {
                     m_controlPanel->setFrameSliderRange(0,0);
                     m_controlPanel->updateFrameLabel(0,0);
                 }
             }
-            
-            // Update the visualization and reset camera view
-            onSliderReleased(); // Load and display the first frame
-            m_vtkManager.resetCamera(); // Adjust camera to fit all objects
+
+            QString patientName = QFileInfo(patientPath).fileName();
+            setWindowTitle(QString("Dicom Viewer — %1 — %2 series · %3 frames")
+                               .arg(patientName)
+                               .arg(selectedSeries.size())
+                               .arg(numFrames));
+            statusBar()->showMessage(QString("Loaded %1 — %2 series · %3 frames")
+                                         .arg(patientName)
+                                         .arg(selectedSeries.size())
+                                         .arg(numFrames),
+                                     8000);
+
+            onSliderReleased();
+            m_vtkManager.resetCamera();
 
         } else {
-            std::cout << "Failed to load DICOM data from the selected series." << std::endl;
+            QMessageBox::critical(this, "Load failed",
+                                  "Failed to load DICOM data from the selected series.");
+            statusBar()->showMessage("Load failed", 5000);
         }
     } else {
-        std::cout << "User canceled series selection." << std::endl;
+        statusBar()->showMessage("Series selection canceled", 4000);
     }
 }
 
@@ -121,13 +135,11 @@ void MainWindow::onSliderMoved(int frameIndex) {
 // Handles frame slider release events
 void MainWindow::onSliderReleased() {
     int frameIndex = m_controlPanel->getFrameSlider()->value();
-    std::cout << "Updating scene to frame " << frameIndex << std::endl;
+    statusBar()->showMessage(QString("Frame %1").arg(frameIndex + 1), 3000);
 
-    // Get all frames for the selected timepoint and update visualization
     std::vector<DicomFrame> frames = m_dicomManager.getFramesForTimepoint(frameIndex);
     m_vtkManager.createScene(frames);
 
-    // Trigger rendering of the updated scene
     m_vtkWidget->renderWindow()->Render();
 }
 
